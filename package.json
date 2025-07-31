@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "local": "nodemon",
-    "start": "NODE_ENV=local ts-node ./index.ts",
+    "start": "cross-env NODE_ENV=local ts-node ./index.ts",
     "dev": "pnpm run build && NODE_ENV=development node ./dist/index.js",
     "prod": "pnpm run build && NODE_ENV=production node ./dist/index.js",
     "build": "npx tsc",
@@ -53,6 +53,7 @@
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
+    "cross-env": "^10.0.0",
     "dayjs": "^1.11.13",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
