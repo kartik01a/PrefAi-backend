@@ -20,6 +20,11 @@ export const createUser = asyncHandler(async (req: Request, res: Response) => {
   res.send(createResponse(result, "User created sucssefully"));
 });
 
+export const updateUserData = asyncHandler(async (req: Request, res: Response) => {
+  const result = await userService.updateUserData(req.params.id, req.body);
+  res.send(createResponse(result, "UserInfo updated sucssefully"));
+});
+
 export const inviteUser = asyncHandler(async (req: Request, res: Response) => {
   const result = await userService.createUser({
     ...req.body,

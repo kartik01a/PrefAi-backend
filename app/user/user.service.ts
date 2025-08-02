@@ -5,10 +5,42 @@ import UserSchema from "./user.schema";
 export const createUser = async (
   data: Omit<IUser, "_id" | "createdAt" | "updatedAt">
 ) => {
-  console.log("data", data)
+  console.log("data", data);
   const result = await UserSchema.create(data);
   const { refreshToken, password, ...user } = result.toJSON();
   return user;
+};
+
+export const updateUserData = async (id: string, data: Partial<IUser>) => {
+  const protectedFields: (keyof IUser)[] = [
+    "email",
+    "firstName",
+    "lastName",
+    "passportNumber",
+    "role",
+    "password",
+    "refreshToken",
+    "facebookId",
+    "provider",
+    "_id",
+    "createdAt",
+    "updatedAt",
+    "title",
+    "country",
+    "maritalStatus",
+    "dob",
+  ];
+  const filteredData: Partial<IUser> = {};
+  Object.entries(data).forEach(([key, value]) => {
+    if (!protectedFields.includes(key as keyof IUser)) {
+      (filteredData as any)[key] = value;
+    }
+  });
+  const result = await UserSchema.findOneAndUpdate({ _id: id }, filteredData, {
+    new: true,
+    select: "-password -refreshToken -facebookId",
+  });
+  return result;
 };
 
 export const updateUser = async (id: string, data: IUser) => {

@@ -27,6 +27,7 @@ export interface IUser extends BaseSchema {
   maritalStatus?: string;
   dob?: Date;
   arrivalDate?: Date;
+  language?: string;
 }
 
 export enum ProviderType {

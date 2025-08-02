@@ -12,7 +12,6 @@ export const hashPassword = async (password: string) => {
 
 const UserSchema = new Schema<IUser>(
   {
-    // Existing fields
     email: { type: String, required: true },
     password: { type: String, required: true, select: false },
     refreshToken: { type: String, default: "", select: false },
@@ -31,7 +30,6 @@ const UserSchema = new Schema<IUser>(
     },
     image: { type: String },
 
-    // New fields
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     userName: { type: String },
@@ -41,6 +39,7 @@ const UserSchema = new Schema<IUser>(
     maritalStatus: { type: String },
     dob: { type: Date },
     arrivalDate: { type: Date },
+    language: { type: String },
     passportNumber: { type: String, required: true },
   },
   { timestamps: true }

@@ -166,6 +166,14 @@ export const updateUser = [
     .withMessage("password must be a string"),
 ];
 
+export const updateUserLanguage = [
+  body("language")
+    .notEmpty()
+    .withMessage("language is required")
+    .isString()
+    .withMessage("language must be a string"),
+];
+
 export const editUser = [
   body("name").isString().withMessage("name must be a string"),
   body("email").isString().withMessage("email must be a string"),

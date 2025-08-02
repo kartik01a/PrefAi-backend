@@ -13,6 +13,12 @@ router
   .get("/:id", userController.getUserById)
   .delete("/:id", userController.deleteUser)
   .post("/", userValidator.createUser, catchError, userController.createUser)
+  .patch(
+    "/language/:id",
+    userValidator.updateUserLanguage,
+    catchError,
+    userController.updateUserData
+  )
   .put("/:id", userValidator.updateUser, catchError, userController.updateUser)
   .patch("/:id", userValidator.editUser, catchError, userController.editUser)
   .post(
@@ -65,30 +71,30 @@ router
     catchError,
     userController.refreshToken
   )
-  .post("/logout", roleAuth(["USER"]), userController.logout)
-  // .post(
-  //   "/social/google",
-  //   userValidator.socialLogin("access_token"),
-  //   catchError,
-  //   userController.googleLogin
-  // )
-  // .post(
-  //   "/social/facebook",
-  //   userValidator.socialLogin("access_token"),
-  //   catchError,
-  //   userController.fbLogin
-  // )
-  // .post(
-  //   "/social/linkedin",
-  //   userValidator.socialLogin("access_token"),
-  //   catchError,
-  //   userController.linkedInLogin
-  // )
-  // .post(
-  //   "/social/apple",
-  //   userValidator.socialLogin("id_token"),
-  //   catchError,
-  //   userController.appleLogin
-  // );
+  .post("/logout", roleAuth(["USER"]), userController.logout);
+// .post(
+//   "/social/google",
+//   userValidator.socialLogin("access_token"),
+//   catchError,
+//   userController.googleLogin
+// )
+// .post(
+//   "/social/facebook",
+//   userValidator.socialLogin("access_token"),
+//   catchError,
+//   userController.fbLogin
+// )
+// .post(
+//   "/social/linkedin",
+//   userValidator.socialLogin("access_token"),
+//   catchError,
+//   userController.linkedInLogin
+// )
+// .post(
+//   "/social/apple",
+//   userValidator.socialLogin("id_token"),
+//   catchError,
+//   userController.appleLogin
+// );
 
 export default router;
