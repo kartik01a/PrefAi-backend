@@ -16,7 +16,6 @@ import { hashPassword } from "./user.schema";
 import * as userService from "./user.service";
 
 export const createUser = asyncHandler(async (req: Request, res: Response) => {
-  console.log("result", req);
   const result = await userService.createUser(req.body);
   res.send(createResponse(result, "User created sucssefully"));
 });
