@@ -89,11 +89,18 @@ export const forgotPassword = checkExact([
 ]);
 
 export const createUser = checkExact([
-  body("name")
+  body("firstName")
     .notEmpty()
-    .withMessage("Name is required")
+    .withMessage("First name is required")
     .isString()
-    .withMessage("Name must be a string"),
+    .withMessage("First name must be a string"),
+
+  body("lastName")
+    .notEmpty()
+    .withMessage("Last name is required")
+    .isString()
+    .withMessage("Last name must be a string"),
+
   body("email")
     .notEmpty()
     .withMessage("Email is required")
@@ -101,20 +108,43 @@ export const createUser = checkExact([
     .withMessage("Email must be valid")
     .custom(async (value) => {
       const user = await userService.getUserByEmail(value);
-      if (user) throw new Error("Email is already exist.");
+      if (user) throw new Error("Email already exists.");
       return true;
     }),
+
   body("password")
     .notEmpty()
     .withMessage("Password is required")
     .isString()
     .withMessage("Password must be a string"),
-  body("confirmPassword").custom((value, { req }) => {
-    if (value !== req.body.password) {
-      throw new Error("Password confirmation does not match password");
-    }
-    return true;
-  }),
+
+  body("confirmPassword")
+    .notEmpty()
+    .withMessage("Confirm password is required")
+    .custom((value, { req }) => {
+      if (value !== req.body.password) {
+        throw new Error("Password confirmation does not match password");
+      }
+      return true;
+    }),
+
+  body("passportNumber")
+    .notEmpty()
+    .withMessage("Passport number is required")
+    .isString()
+    .withMessage("Passport number must be a string"),
+
+  body("role")
+    .notEmpty()
+    .withMessage("Role is required")
+    .isIn(["USER", "ADMIN"])
+    .withMessage("Role must be either USER or ADMIN"),
+
+  body("provider")
+    .notEmpty()
+    .withMessage("Provider is required")
+    .isIn(Object.values(ProviderType))
+    .withMessage(`Provider must be one of: ${Object.values(ProviderType).join(", ")}`)
 ]);
 
 export const updateUser = [

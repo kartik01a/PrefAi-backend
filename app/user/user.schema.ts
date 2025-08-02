@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import mongoose from "mongoose";
 import { ProviderType, type IUser } from "./user.dto";
+import { HydratedDocument } from "mongoose";
 
 const Schema = mongoose.Schema;
 
@@ -11,17 +12,16 @@ export const hashPassword = async (password: string) => {
 
 const UserSchema = new Schema<IUser>(
   {
-    name: { type: String },
-    email: { type: String },
-    active: { type: Boolean, required: false, default: true },
+    // Existing fields
+    email: { type: String, required: true },
+    password: { type: String, required: true, select: false },
+    refreshToken: { type: String, default: "", select: false },
+    active: { type: Boolean, default: true },
     role: {
       type: String,
-      required: true,
       enum: ["USER", "ADMIN"],
       default: "USER",
     },
-    password: { type: String, select: false },
-    refreshToken: { type: String, required: false, default: "", select: false },
     blocked: { type: Boolean, default: false },
     blockReason: { type: String, default: "" },
     provider: {
@@ -29,16 +29,28 @@ const UserSchema = new Schema<IUser>(
       enum: Object.values(ProviderType),
       default: ProviderType.MANUAL,
     },
-    facebookId: { type: String, select: false },
     image: { type: String },
-    linkedinId: { type: String, select: false },
+
+    // New fields
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    userName: { type: String },
+    securityNumber: { type: String },
+    title: { type: String },
+    country: { type: String },
+    maritalStatus: { type: String },
+    dob: { type: Date },
+    arrivalDate: { type: Date },
+    passportNumber: { type: String, required: true },
   },
   { timestamps: true }
 );
 
+// Password hash middleware
 UserSchema.pre("save", async function (next) {
-  if (this.password) {
-    this.password = await hashPassword(this.password);
+  const user = this as HydratedDocument<IUser>;
+  if (user.isModified("password") && user.password) {
+    user.password = await hashPassword(user.password);
   }
   next();
 });

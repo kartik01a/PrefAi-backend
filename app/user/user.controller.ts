@@ -16,6 +16,7 @@ import { hashPassword } from "./user.schema";
 import * as userService from "./user.service";
 
 export const createUser = asyncHandler(async (req: Request, res: Response) => {
+  console.log("result", req);
   const result = await userService.createUser(req.body);
   res.send(createResponse(result, "User created sucssefully"));
 });
@@ -261,120 +262,120 @@ export const refreshToken = asyncHandler(
   }
 );
 
-export const appleLogin = asyncHandler(async (req: Request, res: Response) => {
-  if (!process.env.APPLE_BUNDLE_ID) {
-    throw createHttpError({ message: "Apple bundle id not configured!" });
-  }
+// export const appleLogin = asyncHandler(async (req: Request, res: Response) => {
+//   if (!process.env.APPLE_BUNDLE_ID) {
+//     throw createHttpError({ message: "Apple bundle id not configured!" });
+//   }
 
-  const jwtClaims = await verifyAppleToken({
-    idToken: req.body.id_token,
-    clientId: process.env.APPLE_BUNDLE_ID || "",
-  });
+//   const jwtClaims = await verifyAppleToken({
+//     idToken: req.body.id_token,
+//     clientId: process.env.APPLE_BUNDLE_ID || "",
+//   });
 
-  const existUser = await userService.getUserByEmail(jwtClaims.email);
-  const user =
-    existUser ??
-    (await userService.createUser({
-      email: jwtClaims.email,
-      provider: ProviderType.APPLE,
-      name: "",
-      active: true,
-      role: "USER",
-    }));
-  const tokens = createUserTokens(user);
-  await userService.editUser(user._id, { refreshToken: tokens.refreshToken });
-  res.send(createResponse(tokens));
-});
+//   const existUser = await userService.getUserByEmail(jwtClaims.email);
+//   const user =
+//     existUser ??
+//     (await userService.createUser({
+//       email: jwtClaims.email,
+//       provider: ProviderType.APPLE,
+//       name: "",
+//       active: true,
+//       role: "USER",
+//     }));
+//   const tokens = createUserTokens(user);
+//   await userService.editUser(user._id, { refreshToken: tokens.refreshToken });
+//   res.send(createResponse(tokens));
+// });
 
-export const fbLogin = asyncHandler(async (req: Request, res: Response) => {
-  const urlSearchParams = new URLSearchParams({
-    fields: "id,name,email,picture",
-    access_token: req.body.access_token,
-  });
-  const { data } = await axios.get<{
-    id: string;
-    name: string;
-    email: string;
-    picture: {
-      data: {
-        url: string;
-      };
-    };
-  }>(`https://graph.facebook.com/v15.0/me?${urlSearchParams.toString()}`);
+// export const fbLogin = asyncHandler(async (req: Request, res: Response) => {
+//   const urlSearchParams = new URLSearchParams({
+//     fields: "id,name,email,picture",
+//     access_token: req.body.access_token,
+//   });
+//   const { data } = await axios.get<{
+//     id: string;
+//     name: string;
+//     email: string;
+//     picture: {
+//       data: {
+//         url: string;
+//       };
+//     };
+//   }>(`https://graph.facebook.com/v15.0/me?${urlSearchParams.toString()}`);
 
-  const existUser = await userService.getUserByEmail(data.email);
-  const user =
-    existUser ??
-    (await userService.createUser({
-      email: data.email,
-      provider: ProviderType.FACEBOOK,
-      facebookId: data.id,
-      image: data.picture.data.url,
-      name: data?.name,
-      role: "USER",
-    }));
-  const tokens = createUserTokens(user);
-  await userService.editUser(user._id, { refreshToken: tokens.refreshToken });
-  res.send(createResponse(tokens));
-});
+//   const existUser = await userService.getUserByEmail(data.email);
+//   const user =
+//     existUser ??
+//     (await userService.createUser({
+//       email: data.email,
+//       provider: ProviderType.FACEBOOK,
+//       facebookId: data.id,
+//       image: data.picture.data.url,
+//       name: data?.name,
+//       role: "USER",
+//     }));
+//   const tokens = createUserTokens(user);
+//   await userService.editUser(user._id, { refreshToken: tokens.refreshToken });
+//   res.send(createResponse(tokens));
+// });
 
-export const googleLogin = asyncHandler(async (req: Request, res: Response) => {
-  const { data } = await axios.get<{
-    email: string;
-    name: string;
-    picture: string;
-  }>("https://www.googleapis.com/oauth2/v3/userinfo", {
-    headers: { Authorization: "Bearer " + req.body.access_token },
-  });
+// export const googleLogin = asyncHandler(async (req: Request, res: Response) => {
+//   const { data } = await axios.get<{
+//     email: string;
+//     name: string;
+//     picture: string;
+//   }>("https://www.googleapis.com/oauth2/v3/userinfo", {
+//     headers: { Authorization: "Bearer " + req.body.access_token },
+//   });
 
-  const { email, name = " ", picture } = data;
+//   const { email, name = " ", picture } = data;
 
-  const existUser = await userService.getUserByEmail(data.email);
-  const user =
-    existUser ??
-    (await userService.createUser({
-      email,
-      name,
-      provider: ProviderType.GOOGLE,
-      image: picture,
-      role: "USER",
-    }));
+//   const existUser = await userService.getUserByEmail(data.email);
+//   const user =
+//     existUser ??
+//     (await userService.createUser({
+//       email,
+//       name,
+//       provider: ProviderType.GOOGLE,
+//       image: picture,
+//       role: "USER",
+//     }));
 
-  const tokens = createUserTokens(user);
-  await userService.editUser(user._id, { refreshToken: tokens.refreshToken });
-  res.send(createResponse(tokens));
-});
+//   const tokens = createUserTokens(user);
+//   await userService.editUser(user._id, { refreshToken: tokens.refreshToken });
+//   res.send(createResponse(tokens));
+// });
 
-export const linkedInLogin = asyncHandler(
-  async (req: Request, res: Response) => {
-    const { access_token } = req.body;
+// export const linkedInLogin = asyncHandler(
+//   async (req: Request, res: Response) => {
+//     const { access_token } = req.body;
 
-    const urlSearchParams = new URLSearchParams({
-      oauth2_access_token: access_token,
-    });
+//     const urlSearchParams = new URLSearchParams({
+//       oauth2_access_token: access_token,
+//     });
 
-    const { data: userData } = await axios.get<{
-      sub: string;
-      given_name: string;
-      family_name: string;
-      email: string;
-      picture: string;
-      name: string;
-    }>(`https://api.linkedin.com/v2/userinfo?${urlSearchParams.toString()}`);
+//     const { data: userData } = await axios.get<{
+//       sub: string;
+//       given_name: string;
+//       family_name: string;
+//       email: string;
+//       picture: string;
+//       name: string;
+//     }>(`https://api.linkedin.com/v2/userinfo?${urlSearchParams.toString()}`);
 
-    const existUser = await userService.getUserByEmail(userData.email);
-    const user =
-      existUser ??
-      (await userService.createUser({
-        email: userData.email,
-        name: userData?.name,
-        linkedinId: userData.sub,
-        image: userData.picture,
-        provider: ProviderType.LINKEDIN,
-        role: "USER",
-      }));
-    const tokens = createUserTokens(user);
-    await userService.editUser(user._id, { refreshToken: tokens.refreshToken });
-    res.send(createResponse(tokens));
-  }
-);
+//     const existUser = await userService.getUserByEmail(userData.email);
+//     const user =
+//       existUser ??
+//       (await userService.createUser({
+//         email: userData.email,
+//         name: userData?.name,
+//         linkedinId: userData.sub,
+//         image: userData.picture,
+//         provider: ProviderType.LINKEDIN,
+//         role: "USER",
+//       }));
+//     const tokens = createUserTokens(user);
+//     await userService.editUser(user._id, { refreshToken: tokens.refreshToken });
+//     res.send(createResponse(tokens));
+//   }
+// );

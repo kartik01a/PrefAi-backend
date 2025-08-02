@@ -1,18 +1,32 @@
 import { type BaseSchema } from "../common/dto/base.dto";
 
 export interface IUser extends BaseSchema {
-  name: string;
+  // Required
+  firstName: string;
+  lastName: string;
   email: string;
-  active?: boolean;
   role: "USER" | "ADMIN";
+  passportNumber: string;
+
+  // Optional
+  name?: string; 
   password?: string;
   refreshToken?: string;
+  active?: boolean;
   blocked?: boolean;
   blockReason?: string;
   provider: ProviderType;
   facebookId?: string;
-  image?: string;
   linkedinId?: string;
+  image?: string;
+
+  userName?: string;
+  securityNumber?: string;
+  title?: string;
+  country?: string;
+  maritalStatus?: string;
+  dob?: Date;
+  arrivalDate?: Date;
 }
 
 export enum ProviderType {

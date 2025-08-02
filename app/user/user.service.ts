@@ -5,6 +5,7 @@ import UserSchema from "./user.schema";
 export const createUser = async (
   data: Omit<IUser, "_id" | "createdAt" | "updatedAt">
 ) => {
+  console.log("data", data)
   const result = await UserSchema.create(data);
   const { refreshToken, password, ...user } = result.toJSON();
   return user;
