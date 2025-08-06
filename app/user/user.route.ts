@@ -19,7 +19,7 @@ router
     catchError,
     userController.updateUserData
   )
-  .put("/:id", userValidator.updateUser, catchError, userController.updateUser)
+  .put("/:id", catchError, userController.updateUser)
   .patch("/:id", userValidator.editUser, catchError, userController.editUser)
   .post(
     "/register",

@@ -36,9 +36,11 @@ export const roleAuth = (roles: IUser["role"][], publicRoutes: string[] = []) =>
       }
       const user = req.user as IUser;
       if (!roles.includes(user.role)) {
-        const type =
+        let type: any;
+        if(user.role != undefined) {
+           type =
           user.role.slice(0, 1) + user.role.slice(1).toLocaleLowerCase();
-
+        }
         throw createHttpError(401, {
           message: `${type} can not access this resource`,
         });

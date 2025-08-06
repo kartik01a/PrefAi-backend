@@ -90,6 +90,7 @@ export const createUserTokens = (user: Omit<IUser, "password">) => {
   const refreshToken = jwt.sign(user, jwtSecret, {
     expiresIn: "2d",
   });
+  
   return { accessToken, refreshToken };
 };
 

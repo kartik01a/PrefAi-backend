@@ -1,5 +1,5 @@
 import axios from "axios";
-import { type Request, type Response } from "express";
+import { response, type Request, type Response } from "express";
 import asyncHandler from "express-async-handler";
 import createHttpError from "http-errors";
 import verifyAppleToken from "verify-apple-id-token";
@@ -180,6 +180,8 @@ export const requestResetPassword = asyncHandler(
 );
 
 export const updateUser = asyncHandler(async (req: Request, res: Response) => {
+  console.log("reqdata", req)
+  console.log('responsedata', response)
   const result = await userService.updateUser(req.params.id, req.body);
   res.send(createResponse(result, "User updated sucssefully"));
 });
@@ -223,7 +225,13 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   await userService.editUser(req.user!._id, {
     refreshToken: tokens.refreshToken,
   });
-  res.send(createResponse(tokens));
+  const {...userInfo } = req.user!;
+  res.send(
+    createResponse({
+      ...tokens,
+      userInfo, 
+    })
+  );
 });
 
 export const getUserInfo = asyncHandler(async (req: Request, res: Response) => {
