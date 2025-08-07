@@ -180,8 +180,6 @@ export const requestResetPassword = asyncHandler(
 );
 
 export const updateUser = asyncHandler(async (req: Request, res: Response) => {
-  console.log("reqdata", req)
-  console.log('responsedata', response)
   const result = await userService.updateUser(req.params.id, req.body);
   res.send(createResponse(result, "User updated sucssefully"));
 });
