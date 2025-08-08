@@ -1,6 +1,8 @@
 import { type BaseSchema } from "../common/dto/base.dto";
 
 export interface IUser extends BaseSchema {
+  stripeCustomerId: any;
+  save(): unknown;
   // Required
   firstName: string;
   lastName: string;

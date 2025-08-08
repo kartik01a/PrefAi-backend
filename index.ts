@@ -12,6 +12,8 @@ import { initDB } from "./app/common/services/database.service";
 import { initPassport } from "./app/common/services/passport-jwt.service";
 import routes from "./app/routes";
 import { type IUser } from "./app/user/user.dto";
+import { stripeWebhookHandler } from "./app/subscription/subscription.controller";
+
 
 declare global {
   namespace Express {
@@ -32,6 +34,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(morgan("dev"));
+
+app.post(
+  "/webhook",
+  express.raw({ type: "application/json" }), 
+  stripeWebhookHandler
+);
 
 const initApp = async (): Promise<void> => {
   // init mongodb
