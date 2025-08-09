@@ -13,7 +13,7 @@ import { initPassport } from "./app/common/services/passport-jwt.service";
 import routes from "./app/routes";
 import { type IUser } from "./app/user/user.dto";
 import { stripeWebhookHandler } from "./app/subscription/subscription.controller";
-
+import Stripe from "stripe";
 
 declare global {
   namespace Express {
@@ -24,22 +24,27 @@ declare global {
   }
 }
 
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+  apiVersion: "2025-07-30.basil",
+});
+
+export const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
+
 // const port = Number(process.env.PORT) ?? 5000;
-const port =  5000;
+const port = 5000;
 
 const app: Express = express();
+app.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  stripeWebhookHandler
+);
 
-app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(morgan("dev"));
-
-app.post(
-  "/webhook",
-  express.raw({ type: "application/json" }), 
-  stripeWebhookHandler
-);
+app.use(cors());
 
 const initApp = async (): Promise<void> => {
   // init mongodb

@@ -1,9 +1,8 @@
 import Stripe from "stripe";
 import { IUser } from "../../user/user.dto";
+import { endpointSecret, stripe } from "../../..";
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-  apiVersion: "2025-07-30.basil",
-});
+
 
 export const getOrCreateCustomer = async (user: IUser): Promise<Stripe.Customer> => {
   if (!user.stripeCustomerId) {
@@ -42,9 +41,14 @@ export const createCheckoutSession = async (
 
   return session;
 };
-export const getSubscription = async (subscriptionId: string): Promise<Stripe.Subscription> => {
+export const getSubscription = async (
+  subscriptionId: string | null | undefined
+): Promise<Stripe.Subscription> => {
+  if (!subscriptionId) {
+    throw new Error("No subscription ID provided to getSubscription");
+  }
   return await stripe.subscriptions.retrieve(subscriptionId, {
-    expand: ['items.data.price'], // this ensures price is a full object
+    expand: ["items.data.price"], 
   });
 };
 
@@ -52,7 +56,7 @@ export const constructWebhookEvent = (
   payload: Buffer | string,
   sig: string | string[]
 ): Stripe.Event => {
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const webhookSecret = endpointSecret;
   if (!webhookSecret) throw new Error("Stripe webhook secret not set");
 
   return stripe.webhooks.constructEvent(payload, sig, webhookSecret);
