@@ -180,8 +180,9 @@ export const requestResetPassword = asyncHandler(
 );
 
 export const updateUser = asyncHandler(async (req: Request, res: Response) => {
-  const result = await userService.updateUser(req.params.id, req.body);
-  res.send(createResponse(result, "User updated sucssefully"));
+  const result  = await userService.updateUser(req.params.id, req.body);
+  const userInfo = await userService.getUserById(result?.id);
+  res.send(createResponse(userInfo, "User updated sucssefully"));
 });
 
 export const editUser = asyncHandler(async (req: Request, res: Response) => {
@@ -223,7 +224,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   await userService.editUser(req.user!._id, {
     refreshToken: tokens.refreshToken,
   });
-  const {...userInfo } = req.user!;
+  let userInfo = await userService.getUserById(req.user!._id);
   res.send(
     createResponse({
       ...tokens,
