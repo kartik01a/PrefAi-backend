@@ -1,6 +1,5 @@
 node_modules/
 build/
-dist/
 .env.local
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
