@@ -4,6 +4,7 @@
   "scripts": {
     "local": "nodemon",
     "start": "node dist/index.js",
+    "postinstall": "npm run build",
     "dev": "pnpm run build && NODE_ENV=development node ./dist/index.js",
     "prod": "pnpm run build && NODE_ENV=production node ./dist/index.js",
     "build": "npx tsc",
