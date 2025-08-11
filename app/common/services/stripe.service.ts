@@ -1,6 +1,6 @@
 import Stripe from "stripe";
 import { IUser } from "../../user/user.dto";
-import { endpointSecret, stripe } from "../../../";
+import { endpointSecret, stripe } from "../../..";
 
 export const getOrCreateCustomer = async (
   user: IUser

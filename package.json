@@ -1,16 +1,11 @@
 {
   "name": "template",
   "private": true,
+  "main": "index.ts",
   "scripts": {
-    "local": "nodemon",
-    "start": "cross-env NODE_ENV=local ts-node ./index.ts",
-    "dev": "npm run build && NODE_ENV=development node ./dist/index.js",
-    "prod": "npm run build && NODE_ENV=production node ./dist/index.js",
-    "build": "npx tsc",
-    "lint": "eslint . --ext .ts,.js --max-warnings=0",
-    "lint:fix": "eslint --fix --ext .js,.ts .",
-    "format": "prettier . -w",
-    "format:check": "prettier . --check"
+  "start": "node dist/index.js",
+  "build": "npx tsc",
+  "postinstall": "npm run build"
   },
   "engines": {
     "node": "20.x"
