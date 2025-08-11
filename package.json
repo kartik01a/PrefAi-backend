@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "local": "nodemon",
-    "start": "cross-env NODE_ENV=local ts-node ./index.ts",
+    "start": "node dist/index.js",
     "dev": "pnpm run build && NODE_ENV=development node ./dist/index.js",
     "prod": "pnpm run build && NODE_ENV=production node ./dist/index.js",
     "build": "npx tsc",
@@ -12,6 +12,10 @@
     "format": "prettier . -w",
     "format:check": "prettier . --check",
     "postinstall": "husky install"
+  },
+  "engines": {
+    "node": "20.x",
+    "npm": "10.x"
   },
   "lint-staged": {
     "**/*.{js,ts}": [
