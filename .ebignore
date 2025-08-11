@@ -1,0 +1,23 @@
+app/
+*.ts
+
+# Ignore development configs
+tsconfig.json
+.eslintrc*
+.prettierrc*
+.vscode/
+.git
+.gitignore
+README.md
+
+# Ignore environment files (keep them in EB env vars)
+.env
+.env.*
+
+# Ignore tests
+test/
+tests/
+*.spec.ts
+
+# Keep the compiled output
+!dist/
