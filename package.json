@@ -10,8 +10,7 @@
     "lint": "eslint . --ext .ts,.js --max-warnings=0",
     "lint:fix": "eslint --fix --ext .js,.ts .",
     "format": "prettier . -w",
-    "format:check": "prettier . --check",
-    "postinstall": "husky install"
+    "format:check": "prettier . --check"
   },
   "engines": {
     "node": "20.x",
@@ -46,7 +45,6 @@
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-n": "^15.0.0 || ^16.0.0 ",
     "eslint-plugin-promise": "^6.2.0",
-    "husky": "^8.0.0",
     "install": "^0.13.0",
     "lint-staged": "^13.2.3",
     "npm": "^11.5.2",
