@@ -13,8 +13,7 @@
     "format:check": "prettier . --check"
   },
   "engines": {
-    "node": "20.x",
-    "npm": "10.x"
+    "node": "20.x"
   },
   "lint-staged": {
     "**/*.{js,ts}": [
