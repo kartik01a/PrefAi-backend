@@ -1,11 +1,20 @@
 {
   "compilerOptions": {
-    "target": "es2016" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
-    "module": "commonjs",
-    "outDir": "./dist",
-    "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */,
-    "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
-    "strict": true /* Enable all strict type-checking options. */,
-    "skipLibCheck": true /* Skip type checking all .d.ts files. */
-  }
+    "target": "ES2020",                          // Modern JS features (Node 18+ safe)
+    "module": "CommonJS",                        // Node uses CommonJS for now
+    "outDir": "./dist",                          // Compiled output folder
+    "moduleResolution": "node",                  // Standard Node resolution
+    "esModuleInterop": true,                     // Support default imports from CommonJS
+    "allowSyntheticDefaultImports": true,        // Interop with ES imports
+    "forceConsistentCasingInFileNames": true,    // Avoid case mismatch bugs
+    "strict": true,                              // Enable all strict checks
+    "skipLibCheck": true,                        // Skip type checks for .d.ts files
+    "resolveJsonModule": true,                   // Import JSON files directly
+    "noImplicitAny": true,                       // Force explicit types
+    "removeComments": true,                      // Strip comments in prod
+    "sourceMap": false,                          // Disable in prod (enable in dev if needed)
+    "noEmitOnError": true                         // Prevent build if errors exist
+  },
+  "include": ["app/*/"],                       // Compile only your app folder
+  "exclude": ["node_modules", "dist", "*/.test.ts"] // Skip tests & dist
 }

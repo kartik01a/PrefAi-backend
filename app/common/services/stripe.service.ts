@@ -1,10 +1,10 @@
 import Stripe from "stripe";
 import { IUser } from "../../user/user.dto";
-import { endpointSecret, stripe } from "../../..";
+import { endpointSecret, stripe } from "../../../";
 
-
-
-export const getOrCreateCustomer = async (user: IUser): Promise<Stripe.Customer> => {
+export const getOrCreateCustomer = async (
+  user: IUser
+): Promise<Stripe.Customer> => {
   if (!user.stripeCustomerId) {
     const customer = await stripe.customers.create({
       email: user.email,
@@ -14,7 +14,9 @@ export const getOrCreateCustomer = async (user: IUser): Promise<Stripe.Customer>
     await user.save();
     return customer;
   }
-  return await stripe.customers.retrieve(user.stripeCustomerId) as Stripe.Customer;
+  return (await stripe.customers.retrieve(
+    user.stripeCustomerId
+  )) as Stripe.Customer;
 };
 
 export const createCheckoutSession = async (
@@ -48,7 +50,7 @@ export const getSubscription = async (
     throw new Error("No subscription ID provided to getSubscription");
   }
   return await stripe.subscriptions.retrieve(subscriptionId, {
-    expand: ["items.data.price"], 
+    expand: ["items.data.price"],
   });
 };
 

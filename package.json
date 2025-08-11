@@ -3,10 +3,9 @@
   "private": true,
   "scripts": {
     "local": "nodemon",
-    "start": "node dist/index.js",
-    "postinstall": "npm run build",
-    "dev": "pnpm run build && NODE_ENV=development node ./dist/index.js",
-    "prod": "pnpm run build && NODE_ENV=production node ./dist/index.js",
+    "start": "cross-env NODE_ENV=local ts-node ./index.ts",
+    "dev": "npm run build && NODE_ENV=development node ./dist/index.js",
+    "prod": "npm run build && NODE_ENV=production node ./dist/index.js",
     "build": "npx tsc",
     "lint": "eslint . --ext .ts,.js --max-warnings=0",
     "lint:fix": "eslint --fix --ext .js,.ts .",
@@ -51,7 +50,7 @@
     "prettier": "^3.0.0",
     "stripe": "^18.4.0",
     "ts-node": "^10.9.1",
-    "typescript": "*"
+    "typescript": "^5.9.2"
   },
   "dependencies": {
     "@sendgrid/mail": "^8.1.5",
