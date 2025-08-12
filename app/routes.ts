@@ -7,7 +7,8 @@ const router = express.Router();
 
 router.use("/users", userRoutes);
 router.use("/documents", documentRoutes);
+
 // router.use("/subscription/webhook", express.raw({ type: "application/json" }));
-router.use('/subscription', subscriptionRoutes);
+router.use("/subscription", subscriptionRoutes);
 
 export default router;
