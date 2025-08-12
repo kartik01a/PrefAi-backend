@@ -37,7 +37,7 @@ export const createCheckoutSession = async (
     metadata: {
       userId,
     },
-    success_url: `prefai://success`,
+    success_url: `prefai://document`,
     cancel_url: `prefai://cancel`,
   });
 
