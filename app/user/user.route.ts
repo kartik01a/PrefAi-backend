@@ -71,19 +71,21 @@ router
     catchError,
     userController.refreshToken
   )
-  .post("/logout", roleAuth(["USER"]), userController.logout);
-// .post(
-//   "/social/google",
-//   userValidator.socialLogin("access_token"),
-//   catchError,
-//   userController.googleLogin
-// )
-// .post(
-//   "/social/facebook",
-//   userValidator.socialLogin("access_token"),
-//   catchError,
-//   userController.fbLogin
-// )
+  .post("/logout", roleAuth(["USER"]), userController.logout)
+.post(
+  "/social/google",
+  userValidator.socialLogin("idToken"), 
+  catchError,
+  userController.googleSignIn
+)
+
+.post(
+  "/social/facebook",
+  userValidator.socialLogin("accessToken"),
+  catchError,
+  userController.facebookSignIn
+);
+
 // .post(
 //   "/social/linkedin",
 //   userValidator.socialLogin("access_token"),

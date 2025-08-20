@@ -18,9 +18,11 @@ export interface IUser extends BaseSchema {
   blocked?: boolean;
   blockReason?: string;
   provider: ProviderType;
-  facebookId?: string;
   linkedinId?: string;
   image?: string;
+  
+  googleId?: string;
+  facebookId?: string;
 
   userName?: string;
   securityNumber?: string;

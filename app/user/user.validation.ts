@@ -194,9 +194,8 @@ export const refreshToken = [
 export const socialLogin = (name: string) => [
   body(name)
     .notEmpty()
-    .bail()
     .withMessage(`${name} is required`)
-    .isString()
     .bail()
-    .withMessage(`${name} must be string`),
+    .isString()
+    .withMessage(`${name} must be a string`),
 ];
