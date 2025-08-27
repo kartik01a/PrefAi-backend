@@ -330,33 +330,78 @@ export const refreshToken = asyncHandler(
 //   res.send(createResponse(tokens));
 // });
 
-// export const googleLogin = asyncHandler(async (req: Request, res: Response) => {
-//   const { data } = await axios.get<{
-//     email: string;
-//     name: string;
-//     picture: string;
-//   }>("https://www.googleapis.com/oauth2/v3/userinfo", {
-//     headers: { Authorization: "Bearer " + req.body.access_token },
-//   });
+export const googleSignIn = asyncHandler(async (req: Request, res: Response) => {
+  const { idToken } = req.body;
 
-//   const { email, name = " ", picture } = data;
+  // Verify token with Google
+  const googleResp = await axios.get(
+    `https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`
+  );
 
-//   const existUser = await userService.getUserByEmail(data.email);
-//   const user =
-//     existUser ??
-//     (await userService.createUser({
-//       email,
-//       name,
-//       provider: ProviderType.GOOGLE,
-//       image: picture,
-//       role: "USER",
-//     }));
+  const { email, sub, picture, given_name, family_name } = googleResp.data;
 
-//   const tokens = createUserTokens(user);
-//   await userService.editUser(user._id, { refreshToken: tokens.refreshToken });
-//   res.send(createResponse(tokens));
-// });
+  let user = await userService.getUserByEmail(email);
 
+  if (!user) {
+    // create a new user
+    user = await userService.createUser({
+      email,
+      firstName: given_name || "",
+      lastName: family_name || "",
+      image: picture,
+      provider: ProviderType.GOOGLE,
+      googleId: sub,
+      passportNumber: "NA",
+    } as any);
+  }
+
+  const tokens = createUserTokens(user);
+  await userService.editUser(user._id, { refreshToken: tokens.refreshToken });
+
+  res.send(
+    createResponse({
+      ...tokens,
+      userInfo: user,
+    })
+  );
+});
+
+// Facebook login
+export const facebookSignIn = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { accessToken } = req.body;
+
+    const fbResp = await axios.get(
+      `https://graph.facebook.com/me?fields=id,email,first_name,last_name,picture&access_token=${accessToken}`
+    );
+
+    const { id, email, first_name, last_name, picture } = fbResp.data;
+
+    let user = await userService.getUserByEmail(email);
+
+    if (!user) {
+      user = await userService.createUser({
+        email,
+        firstName: first_name,
+        lastName: last_name,
+        image: picture?.data?.url,
+        provider: ProviderType.FACEBOOK,
+        facebookId: id,
+        passportNumber: "NA", // adjust if optional
+      } as any);
+    }
+
+    const tokens = createUserTokens(user);
+    await userService.editUser(user._id, { refreshToken: tokens.refreshToken });
+
+    res.send(
+      createResponse({
+        ...tokens,
+        userInfo: user,
+      })
+    );
+  }
+);
 // export const linkedInLogin = asyncHandler(
 //   async (req: Request, res: Response) => {
 //     const { access_token } = req.body;

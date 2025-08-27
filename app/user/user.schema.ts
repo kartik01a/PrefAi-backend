@@ -30,6 +30,9 @@ const UserSchema = new Schema<IUser>(
     },
     image: { type: String },
 
+    googleId: { type: String, select: false },
+    facebookId: { type: String, select: false },
+
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     userName: { type: String },
