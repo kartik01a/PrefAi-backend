@@ -1,7 +1,7 @@
 // app/chat/chat.controller.ts
 
 import { type Request, type Response, type NextFunction } from "express";
-import { askOpenAI } from "./chat.service";
+import { askOpenAI, translateService } from "./chat.service";
 import { validateChatRequest } from "./chat.validation";
 import { ChatResponseDTO } from "./chat.dto";
 
@@ -24,16 +24,64 @@ export async function createChatReply(
   }
 }
 
-
-export async function analyzeFile(req: Request, res: Response, next: NextFunction) {
+export async function analyzeFile(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   try {
     if (!req.file) {
-      return res.status(400).json({ success: false, error: "No file uploaded" });
+      return res
+        .status(400)
+        .json({ success: false, error: "No file uploaded" });
     }
 
     // Simplest: pass file content name to GPT
     // For PDFs, DOCX, images you’ll need to parse or use GPT-4o’s vision input
-    const reply = await askOpenAI(`User uploaded file: ${req.file.originalname}. Summarize its content.`);
+    const reply = await askOpenAI(
+      `User uploaded file: ${req.file.originalname}. Summarize its content.`
+    );
+
+    res.json({ success: true, reply });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function translate(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    console.log(req.body)
+    const { text, from, to } = req.body;
+
+    // Validate input
+    if (!text || !from || !to) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required parameters: text, from, to",
+      });
+    }
+
+    if (text.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Text cannot be empty",
+      });
+    }
+
+    if (from === to) {
+      return res.json({
+        success: true,
+        translatedText: text,
+        originalText: text,
+        fromLanguage: from,
+        toLanguage: to,
+      });
+    }
+    const reply = await translateService(text, from, to);
 
     res.json({ success: true, reply });
   } catch (err) {

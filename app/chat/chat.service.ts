@@ -2,10 +2,15 @@
 
 import OpenAI from "openai";
 import { ChatMessageItem } from "./chat.dto";
+const { Translate } = require("@google-cloud/translate").v2;
 
 // Initialize once per process
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
+});
+
+const translate = new Translate({
+  key: process.env.GOOGLE_TRANSLATE_API_KEY,
 });
 
 // Minimal system prompt you can customize
@@ -35,7 +40,43 @@ export async function askOpenAI(
   });
 
   const reply =
-    completion.choices?.[0]?.message?.content?.trim() ?? "Sorry, I have no reply.";
+    completion.choices?.[0]?.message?.content?.trim() ??
+    "Sorry, I have no reply.";
 
   return reply;
+}
+export async function translateService(text: string, from: string, to: string) {
+  try {
+    const [translation] = await translate.translate(text, {
+      from: from,
+      to: to,
+    });
+
+    return {
+      success: true,
+      translatedText: translation,
+    };
+  } catch (error: any) {
+    console.error("Translation error:", error);
+
+    if (error.code === 400) {
+      return {
+        success: false,
+        error:
+          "Invalid translation request. Please check language codes and text.",
+      };
+    }
+
+    if (error.code === 403) {
+      return {
+        success: false,
+        error: "API key invalid or quota exceeded.",
+      };
+    }
+
+    return {
+      success: false,
+      error: "Translation service temporarily unavailable",
+    };
+  }
 }
