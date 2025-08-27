@@ -55,6 +55,7 @@
   "dependencies": {
     "@google-cloud/translate": "^9.2.0",
     "@sendgrid/mail": "^8.1.5",
+    "@types/pdf-parse": "^1.1.5",
     "axios": "^1.9.0",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.2",
@@ -67,6 +68,7 @@
     "express-validator": "^7.0.1",
     "jsonwebtoken": "^9.0.1",
     "mailchimp": "^1.2.1",
+    "mammoth": "^1.10.0",
     "mongoose": "^7.8.0",
     "morgan": "^1.10.0",
     "multer": "^2.0.2",
@@ -77,6 +79,7 @@
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
+    "pdf-parse": "^1.1.1",
     "verify-apple-id-token": "^3.1.2"
   }
 }

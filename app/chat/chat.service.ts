@@ -4,7 +4,6 @@ import OpenAI from "openai";
 import { ChatMessageItem } from "./chat.dto";
 const { Translate } = require("@google-cloud/translate").v2;
 
-// Initialize once per process
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -13,7 +12,6 @@ const translate = new Translate({
   key: process.env.GOOGLE_TRANSLATE_API_KEY,
 });
 
-// Minimal system prompt you can customize
 const DEFAULT_SYSTEM: ChatMessageItem = {
   role: "system",
   content:
@@ -22,29 +20,26 @@ const DEFAULT_SYSTEM: ChatMessageItem = {
 
 export async function askOpenAI(
   latest: string,
-  context?: ChatMessageItem[]
+  context?: ChatMessageItem[],
+  docContext?: string
 ): Promise<string> {
-  // Build the messages array (system + context + latest user)
-  const messages = [
+  const messages: ChatMessageItem[] = [
     DEFAULT_SYSTEM,
     ...(context ?? []),
-    { role: "user", content: latest } as ChatMessageItem,
   ];
-
-  // Chat Completions API (stable, supported indefinitely)
+  if (docContext) {
+    messages.push({ role: "system", content: docContext });
+  }
+  messages.push({ role: "user", content: latest });
   const completion = await client.chat.completions.create({
     model: "gpt-4o-mini",
     messages: messages as any,
     temperature: 0.7,
     max_tokens: 512,
   });
-
-  const reply =
-    completion.choices?.[0]?.message?.content?.trim() ??
-    "Sorry, I have no reply.";
-
-  return reply;
+  return completion.choices?.[0]?.message?.content?.trim() ?? "Sorry, I have no reply.";
 }
+
 export async function translateService(text: string, from: string, to: string) {
   try {
     const [translation] = await translate.translate(text, {

@@ -4,6 +4,12 @@ import { type Request, type Response, type NextFunction } from "express";
 import { askOpenAI, translateService } from "./chat.service";
 import { validateChatRequest } from "./chat.validation";
 import { ChatResponseDTO } from "./chat.dto";
+import fs from "fs";
+import path from "path";
+import pdfParse from "pdf-parse";
+import mammoth from "mammoth";
+
+const userDocs: Record<string, string> = {};
 
 export async function createChatReply(
   req: Request,
@@ -12,12 +18,15 @@ export async function createChatReply(
 ) {
   try {
     const { message, context } = validateChatRequest(req.body);
-
-    // Optional: you can access req.user if authenticated and store conversation, etc.
-    // const userId = req.user?._id;
-
-    const reply = await askOpenAI(message, context);
-
+    const userId = req.user?._id || "default";
+    const docText = userDocs[userId];
+    const reply = await askOpenAI(
+      message,
+      context,
+      docText
+        ? `The user uploaded a document. Use this as context:\n${docText}`
+        : undefined
+    );
     res.json({ success: true, reply });
   } catch (err) {
     next(err);
@@ -35,14 +44,35 @@ export async function analyzeFile(
         .status(400)
         .json({ success: false, error: "No file uploaded" });
     }
+    const filePath = req.file.path;
+    const ext = path.extname(req.file.originalname).toLowerCase();
+    let extractedText = "";
+    if (ext === ".pdf") {
+      const dataBuffer = fs.readFileSync(filePath);
+      const pdfData = await pdfParse(dataBuffer);
+      extractedText = pdfData.text;
+    } else if (ext === ".docx") {
+      const result = await mammoth.extractRawText({ path: filePath });
+      extractedText = result.value;
+    } else if (ext === ".txt") {
+      extractedText = fs.readFileSync(filePath, "utf-8");
+    } else {
+      extractedText = `File uploaded: ${req.file.originalname}, but unsupported type.`;
+    }
+    if (!extractedText.trim()) {
+      extractedText = "Could not extract text from file.";
+    }
+    const userId = req.user?._id || "default";
+    userDocs[userId] = extractedText;
 
-    // Simplest: pass file content name to GPT
-    // For PDFs, DOCX, images you’ll need to parse or use GPT-4o’s vision input
-    const reply = await askOpenAI(
-      `User uploaded file: ${req.file.originalname}. Summarize its content.`
-    );
+    fs.unlink(filePath, (err) => {
+      if (err) console.error("Error deleting uploaded file:", err);
+    });
 
-    res.json({ success: true, reply });
+    res.json({
+      success: true,
+      reply: `I have received your file "${req.file.originalname}". You can now ask me questions about it.`,
+    });
   } catch (err) {
     next(err);
   }
@@ -54,7 +84,7 @@ export async function translate(
   next: NextFunction
 ) {
   try {
-    console.log(req.body)
+    console.log(req.body);
     const { text, from, to } = req.body;
 
     // Validate input
