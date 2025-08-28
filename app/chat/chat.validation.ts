@@ -11,6 +11,7 @@ export function validateChatRequest(body: any): ChatRequestDTO {
 
   const payload: ChatRequestDTO = {
     message: body.message.trim(),
+    responseLanguage: body?.language || "english",
     context: Array.isArray(body.context)
       ? body.context.filter(isChatMessageItem)
       : undefined,

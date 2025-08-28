@@ -43,15 +43,15 @@ LANGUAGE SUPPORT:
 Always prioritize practical, immediately useful information over lengthy explanations.`,
 };
 
-const SUPPORTED_LANGUAGES = [
-  "english",
-  "japanese",
-  "portuguese",
-  "georgian",
-  "arabic",
-  "chinese",
-  "french",
-];
+// const SUPPORTED_LANGUAGES = [
+//   "english",
+//   "russian",
+//   "portuguese",
+//   "georgian",
+//   "arabic",
+//   "chinese",
+//   "french",
+// ];
 
 // Enhanced context analysis
 function analyzeUserContext(message: string, docContext?: string): string {
@@ -155,7 +155,6 @@ function extractTranslationLanguage(message: string): string | null {
     chinese:
       /\b(to chinese|in chinese|en chinois|translate.*chinese|auf chinesisch)\b/i,
 
-    // Additional common translation languages
     spanish:
       /\b(to spanish|in spanish|en espagnol|translate.*spanish|en español|auf spanisch)\b/i,
     german:
@@ -188,11 +187,10 @@ function extractTranslationLanguage(message: string): string | null {
 export async function askOpenAI(
   latest: string,
   context?: ChatMessageItem[],
-  docContext?: string,
-  responseLanguage?: string
+  responseLanguage?: string,
+  docContext?: string
 ): Promise<string> {
   try {
-    // Analyze user context and translation intent
     const contextAnalysis = analyzeUserContext(latest, docContext);
     const isTranslation = isTranslationRequest(latest);
     const targetLanguage = extractTranslationLanguage(latest);
@@ -202,6 +200,7 @@ export async function askOpenAI(
       isTranslation && targetLanguage
         ? targetLanguage
         : responseLanguage || "english";
+
 
     // Build enhanced system message
     let enhancedSystemContent = FRENCH_BUREAUCRACY_SYSTEM.content;

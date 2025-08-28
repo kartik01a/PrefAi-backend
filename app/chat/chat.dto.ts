@@ -8,7 +8,8 @@ export interface ChatMessageItem {
 }
 
 export interface ChatRequestDTO {
-  message: string;                    
+  message: string;  
+  responseLanguage: string;                  
   context?: ChatMessageItem[];   
 }
 

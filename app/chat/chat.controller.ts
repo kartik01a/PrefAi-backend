@@ -17,12 +17,13 @@ export async function createChatReply(
   next: NextFunction
 ) {
   try {
-    const { message, context } = validateChatRequest(req.body);
+    const { message, context, responseLanguage } = validateChatRequest(req.body);
     const userId = req.user?._id || "default";
     const docText = userDocs[userId];
     const reply = await askOpenAI(
       message,
       context,
+      responseLanguage,
       docText
         ? `The user uploaded a document. Use this as context:\n${docText}`
         : undefined
