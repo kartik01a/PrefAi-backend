@@ -1,7 +1,10 @@
 // app/chat/chat.service.ts
 
+import { SpeechClient, protos } from "@google-cloud/speech";
+import fs from "fs";
 import OpenAI from "openai";
 import { ChatMessageItem } from "./chat.dto";
+import path from "path";
 const { Translate } = require("@google-cloud/translate").v2;
 
 const client = new OpenAI({
@@ -285,5 +288,37 @@ export async function translateService(text: string, from: string, to: string) {
       success: false,
       error: "Translation service temporarily unavailable",
     };
+  }
+}
+
+
+
+// const speechClient = new SpeechClient();
+const speechClient = new SpeechClient({
+  keyFilename: path.join(__dirname, "../../config/gcp-key.json"),
+});
+
+export async function transcribeService(filePath: string, language: string) {
+  try {
+    const file = fs.readFileSync(filePath);
+    const audioBytes = file.toString("base64");
+    const request: protos.google.cloud.speech.v1.IRecognizeRequest = {
+      audio: { content: audioBytes },
+      config: {
+        encoding:
+          protos.google.cloud.speech.v1.RecognitionConfig.AudioEncoding.LINEAR16,
+        sampleRateHertz: 16000,
+        languageCode: language || "en-US",
+      },
+    };
+    const [response] = await speechClient.recognize(request);
+    const transcription = response.results
+      ?.map((r) => r.alternatives?.[0]?.transcript || "")
+      .join(" ")
+      .trim();
+    return transcription;
+  } catch (error: any) {
+    console.error("Google STT error:", error);
+    throw new Error("Failed to transcribe audio");
   }
 }

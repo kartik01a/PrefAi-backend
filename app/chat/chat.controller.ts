@@ -1,7 +1,7 @@
 // app/chat/chat.controller.ts
 
 import { type Request, type Response, type NextFunction } from "express";
-import { askOpenAI, translateService } from "./chat.service";
+import { askOpenAI, transcribeService, translateService } from "./chat.service";
 import { validateChatRequest } from "./chat.validation";
 import { ChatResponseDTO } from "./chat.dto";
 import fs from "fs";
@@ -174,6 +174,38 @@ export async function translate(
 
     res.json({ success: true, reply });
   } catch (err) {
+    next(err);
+  }
+}
+
+
+export async function transcribeAudio(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { audio, language } = req.body;
+
+    if (!audio) {
+      return res.status(400).json({ success: false, error: "No audio provided" });
+    }
+
+    // save base64 as temp file
+    const buffer = Buffer.from(audio, "base64");
+    const tempFilePath = path.join(__dirname, "../../uploads/temp_audio.wav");
+    fs.writeFileSync(tempFilePath, buffer);
+
+    const text = await transcribeService(tempFilePath, language);
+
+    // cleanup
+    fs.unlink(tempFilePath, (err) => {
+      if (err) console.error("Error deleting temp file:", err);
+    });
+
+    res.json({ success: true, text });
+  } catch (err) {
+    console.error("Transcription error:", err);
     next(err);
   }
 }
