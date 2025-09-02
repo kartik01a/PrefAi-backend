@@ -293,32 +293,46 @@ export async function translateService(text: string, from: string, to: string) {
 
 
 
-// const speechClient = new SpeechClient();
-const speechClient = new SpeechClient({
-  keyFilename: path.join(__dirname, "../../config/gcp-key.json"),
-});
+// const speechClient = new SpeechClient({
+//   keyFilename: path.join(__dirname, "../../config/gcp-key.json"),
+// });
+
+// export async function transcribeService(filePath: string, language: string) {
+//   try {
+//     const file = fs.readFileSync(filePath);
+//     const audioBytes = file.toString("base64");
+//     const request: protos.google.cloud.speech.v1.IRecognizeRequest = {
+//       audio: { content: audioBytes },
+//       config: {
+//         encoding:
+//           protos.google.cloud.speech.v1.RecognitionConfig.AudioEncoding.LINEAR16,
+//         sampleRateHertz: 16000,
+//         languageCode: language || "en-US",
+//       },
+//     };
+//     const [response] = await speechClient.recognize(request);
+//     const transcription = response.results
+//       ?.map((r) => r.alternatives?.[0]?.transcript || "")
+//       .join(" ")
+//       .trim();
+//     return transcription;
+//   } catch (error: any) {
+//     console.error("Google STT error:", error);
+//     throw new Error("Failed to transcribe audio");
+//   }
+// }
 
 export async function transcribeService(filePath: string, language: string) {
   try {
-    const file = fs.readFileSync(filePath);
-    const audioBytes = file.toString("base64");
-    const request: protos.google.cloud.speech.v1.IRecognizeRequest = {
-      audio: { content: audioBytes },
-      config: {
-        encoding:
-          protos.google.cloud.speech.v1.RecognitionConfig.AudioEncoding.LINEAR16,
-        sampleRateHertz: 16000,
-        languageCode: language || "en-US",
-      },
-    };
-    const [response] = await speechClient.recognize(request);
-    const transcription = response.results
-      ?.map((r) => r.alternatives?.[0]?.transcript || "")
-      .join(" ")
-      .trim();
-    return transcription;
+    const transcription = await client.audio.transcriptions.create({
+      file: fs.createReadStream(filePath),
+      model: "whisper-1",
+      language: language, // e.g. "en", "fr", "es"
+    });
+
+    return transcription.text;
   } catch (error: any) {
-    console.error("Google STT error:", error);
+    console.error("Whisper transcription error:", error);
     throw new Error("Failed to transcribe audio");
   }
 }

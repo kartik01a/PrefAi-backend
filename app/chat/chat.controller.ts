@@ -179,6 +179,38 @@ export async function translate(
 }
 
 
+// export async function transcribeAudio(
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) {
+//   try {
+//     const { audio, language } = req.body;
+
+//     if (!audio) {
+//       return res.status(400).json({ success: false, error: "No audio provided" });
+//     }
+
+//     // save base64 as temp file
+//     const buffer = Buffer.from(audio, "base64");
+//     const tempFilePath = path.join(__dirname, "../../uploads/temp_audio.wav");
+//     fs.writeFileSync(tempFilePath, buffer);
+
+//     const text = await transcribeService(tempFilePath, language);
+
+//     // cleanup
+//     fs.unlink(tempFilePath, (err) => {
+//       if (err) console.error("Error deleting temp file:", err);
+//     });
+
+//     res.json({ success: true, text });
+//   } catch (err) {
+//     console.error("Transcription error:", err);
+//     next(err);
+//   }
+// }
+
+
 export async function transcribeAudio(
   req: Request,
   res: Response,
@@ -191,14 +223,15 @@ export async function transcribeAudio(
       return res.status(400).json({ success: false, error: "No audio provided" });
     }
 
-    // save base64 as temp file
+    // Write temp file from base64
     const buffer = Buffer.from(audio, "base64");
-    const tempFilePath = path.join(__dirname, "../../uploads/temp_audio.wav");
+    const tempFilePath = path.join(__dirname, "../../uploads/temp_audio.m4a");
     fs.writeFileSync(tempFilePath, buffer);
 
+    // Call service
     const text = await transcribeService(tempFilePath, language);
 
-    // cleanup
+    // Clean up temp file
     fs.unlink(tempFilePath, (err) => {
       if (err) console.error("Error deleting temp file:", err);
     });
