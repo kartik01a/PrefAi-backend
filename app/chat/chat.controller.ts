@@ -17,7 +17,9 @@ export async function createChatReply(
   next: NextFunction
 ) {
   try {
-    const { message, context, responseLanguage } = validateChatRequest(req.body);
+    const { message, context, responseLanguage } = validateChatRequest(
+      req.body
+    );
     const userId = req.user?._id || "default";
     const docText = userDocs[userId];
     const reply = await askOpenAI(
@@ -75,14 +77,12 @@ export async function analyzeFile(
       console.error("File processing error:", fileError);
       return res.status(500).json({
         success: false,
-        error:
-          "Error reading file. Check if the file is corrupted.",
+        error: "Error reading file. Check if the file is corrupted.",
       });
     }
 
     if (!extractedText.trim()) {
-      extractedText =
-        "The file appears empty or text could not be extracted.";
+      extractedText = "The file appears empty or text could not be extracted.";
     }
 
     // Enhanced text cleaning for better processing
@@ -178,7 +178,6 @@ export async function translate(
   }
 }
 
-
 // export async function transcribeAudio(
 //   req: Request,
 //   res: Response,
@@ -210,29 +209,30 @@ export async function translate(
 //   }
 // }
 
-
 export async function transcribeAudio(
   req: Request,
   res: Response,
   next: NextFunction
 ) {
   try {
-    const { audio, language } = req.body;
-
-    if (!audio) {
-      return res.status(400).json({ success: false, error: "No audio provided" });
+    if (!req.file) {
+      return res
+        .status(400)
+        .json({ success: false, error: "No audio uploaded" });
     }
 
-    // Write temp file from base64
-    const buffer = Buffer.from(audio, "base64");
-    const tempFilePath = path.join(__dirname, "../../uploads/temp_audio.m4a");
-    fs.writeFileSync(tempFilePath, buffer);
+    const { language } = req.body;
+    const audio = req.file.path;
 
-    // Call service
-    const text = await transcribeService(tempFilePath, language);
+    if (!audio) {
+      return res
+        .status(400)
+        .json({ success: false, error: "No audio provided" });
+    }
 
-    // Clean up temp file
-    fs.unlink(tempFilePath, (err) => {
+    const text = await transcribeService(req.file.path, language);
+
+    fs.unlink(req.file.path, (err) => {
       if (err) console.error("Error deleting temp file:", err);
     });
 
