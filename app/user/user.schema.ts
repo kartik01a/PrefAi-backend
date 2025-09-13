@@ -44,6 +44,7 @@ const UserSchema = new Schema<IUser>(
     arrivalDate: { type: Date },
     language: { type: String },
     passportNumber: { type: String, required: true },
+    fcmToken: { type: String, default: "" },
   },
   { timestamps: true }
 );

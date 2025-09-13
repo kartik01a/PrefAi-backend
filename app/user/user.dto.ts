@@ -32,6 +32,7 @@ export interface IUser extends BaseSchema {
   dob?: Date;
   arrivalDate?: Date;
   language?: string;
+  fcmToken?: string;
 }
 
 export enum ProviderType {
