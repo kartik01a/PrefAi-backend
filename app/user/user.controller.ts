@@ -20,9 +20,120 @@ export const createUser = asyncHandler(async (req: Request, res: Response) => {
   res.send(createResponse(result, "User created sucssefully"));
 });
 
+export const login = asyncHandler(async (req: Request, res: Response) => {
+  const tokens = createUserTokens(req.user!);
+    const updateData: any = { refreshToken: tokens.refreshToken };
+  if (req.body.fcmToken) {
+    updateData.fcmToken = req.body.fcmToken;
+  }
+  // await userService.editUser(req.user!._id, {
+  //   refreshToken: tokens.refreshToken,
+  // });
+    await userService.editUser(req.user!._id, updateData);
+  let userInfo = await userService.getUserById(req.user!._id);
+  res.send(
+    createResponse({
+      ...tokens,
+      userInfo, 
+    })
+  );
+});
+
+
+export const logout = asyncHandler(async (req: Request, res: Response) => {
+  const user = req.user!;
+  await userService.editUser(user._id, { refreshToken: "" });
+  res.send(createResponse({ message: "User logout successfully!" }));
+});
+export const googleSignIn = asyncHandler(async (req: Request, res: Response) => {
+  const { idToken, fcmToken } = req.body; // ⬅️ added fcmToken
+
+  const googleResp = await axios.get(
+    `https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`
+  );
+
+  const { email, sub, picture, given_name, family_name } = googleResp.data;
+
+  let user = await userService.getUserByEmail(email);
+
+  if (!user) {
+    user = await userService.createUser({
+      email,
+      firstName: given_name || "",
+      lastName: family_name || "",
+      image: picture,
+      provider: ProviderType.GOOGLE,
+      googleId: sub,
+      passportNumber: "NA",
+      fcmToken: fcmToken || "", // ⬅️ store fcmToken at creation
+    } as any);
+  }
+
+  const tokens = createUserTokens(user);
+  await userService.editUser(user._id, {
+    refreshToken: tokens.refreshToken,
+    ...(fcmToken && { fcmToken }), // ⬅️ update if provided
+  });
+
+  res.send(
+    createResponse({
+      ...tokens,
+      userInfo: user,
+    })
+  );
+});
+
+
+export const facebookSignIn = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { accessToken, fcmToken } = req.body; // ⬅️ added fcmToken
+
+    const fbResp = await axios.get(
+      `https://graph.facebook.com/me?fields=id,email,first_name,last_name,picture&access_token=${accessToken}`
+    );
+
+    const { id, email, first_name, last_name, picture } = fbResp.data;
+
+    let user = await userService.getUserByEmail(email);
+
+    if (!user) {
+      user = await userService.createUser({
+        email,
+        firstName: first_name,
+        lastName: last_name,
+        image: picture?.data?.url,
+        provider: ProviderType.FACEBOOK,
+        facebookId: id,
+        passportNumber: "NA",
+        fcmToken: fcmToken || "", // ⬅️ add here
+      } as any);
+    }
+
+    const tokens = createUserTokens(user);
+    await userService.editUser(user._id, {
+      refreshToken: tokens.refreshToken,
+      ...(fcmToken && { fcmToken }), // ⬅️ update if provided
+    });
+
+    res.send(
+      createResponse({
+        ...tokens,
+        userInfo: user,
+      })
+    );
+  }
+);
+
+
 export const updateUserData = asyncHandler(async (req: Request, res: Response) => {
   const result = await userService.updateUserData(req.params.id, req.body);
   res.send(createResponse(result, "UserInfo updated sucssefully"));
+});
+
+export const updateUser = asyncHandler(async (req: Request, res: Response) => {
+  const result  = await userService.updateUser(req.params.id, req.body);
+  const userInfo = await userService.getUserById(result?.id);
+  res.send(createResponse(userInfo, "User updated sucssefully"));
 });
 
 export const inviteUser = asyncHandler(async (req: Request, res: Response) => {
@@ -179,11 +290,7 @@ export const requestResetPassword = asyncHandler(
   }
 );
 
-export const updateUser = asyncHandler(async (req: Request, res: Response) => {
-  const result  = await userService.updateUser(req.params.id, req.body);
-  const userInfo = await userService.getUserById(result?.id);
-  res.send(createResponse(userInfo, "User updated sucssefully"));
-});
+
 
 export const editUser = asyncHandler(async (req: Request, res: Response) => {
   const result = await userService.editUser(req.params.id, req.body);
@@ -219,30 +326,14 @@ export const getAllUser = asyncHandler(async (req: Request, res: Response) => {
   res.send(createResponse(result));
 });
 
-export const login = asyncHandler(async (req: Request, res: Response) => {
-  const tokens = createUserTokens(req.user!);
-  await userService.editUser(req.user!._id, {
-    refreshToken: tokens.refreshToken,
-  });
-  let userInfo = await userService.getUserById(req.user!._id);
-  res.send(
-    createResponse({
-      ...tokens,
-      userInfo, 
-    })
-  );
-});
 
 export const getUserInfo = asyncHandler(async (req: Request, res: Response) => {
   const user = await userService.getUserById(req.user?._id!);
   res.send(createResponse(user));
 });
 
-export const logout = asyncHandler(async (req: Request, res: Response) => {
-  const user = req.user!;
-  await userService.editUser(user._id, { refreshToken: "" });
-  res.send(createResponse({ message: "User logout successfully!" }));
-});
+
+
 
 export const refreshToken = asyncHandler(
   async (req: Request, res: Response) => {
@@ -273,165 +364,3 @@ export const refreshToken = asyncHandler(
   }
 );
 
-// export const appleLogin = asyncHandler(async (req: Request, res: Response) => {
-//   if (!process.env.APPLE_BUNDLE_ID) {
-//     throw createHttpError({ message: "Apple bundle id not configured!" });
-//   }
-
-//   const jwtClaims = await verifyAppleToken({
-//     idToken: req.body.id_token,
-//     clientId: process.env.APPLE_BUNDLE_ID || "",
-//   });
-
-//   const existUser = await userService.getUserByEmail(jwtClaims.email);
-//   const user =
-//     existUser ??
-//     (await userService.createUser({
-//       email: jwtClaims.email,
-//       provider: ProviderType.APPLE,
-//       name: "",
-//       active: true,
-//       role: "USER",
-//     }));
-//   const tokens = createUserTokens(user);
-//   await userService.editUser(user._id, { refreshToken: tokens.refreshToken });
-//   res.send(createResponse(tokens));
-// });
-
-// export const fbLogin = asyncHandler(async (req: Request, res: Response) => {
-//   const urlSearchParams = new URLSearchParams({
-//     fields: "id,name,email,picture",
-//     access_token: req.body.access_token,
-//   });
-//   const { data } = await axios.get<{
-//     id: string;
-//     name: string;
-//     email: string;
-//     picture: {
-//       data: {
-//         url: string;
-//       };
-//     };
-//   }>(`https://graph.facebook.com/v15.0/me?${urlSearchParams.toString()}`);
-
-//   const existUser = await userService.getUserByEmail(data.email);
-//   const user =
-//     existUser ??
-//     (await userService.createUser({
-//       email: data.email,
-//       provider: ProviderType.FACEBOOK,
-//       facebookId: data.id,
-//       image: data.picture.data.url,
-//       name: data?.name,
-//       role: "USER",
-//     }));
-//   const tokens = createUserTokens(user);
-//   await userService.editUser(user._id, { refreshToken: tokens.refreshToken });
-//   res.send(createResponse(tokens));
-// });
-
-export const googleSignIn = asyncHandler(async (req: Request, res: Response) => {
-  const { idToken } = req.body;
-
-  // Verify token with Google
-  const googleResp = await axios.get(
-    `https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`
-  );
-
-  const { email, sub, picture, given_name, family_name } = googleResp.data;
-
-  let user = await userService.getUserByEmail(email);
-
-  if (!user) {
-    // create a new user
-    user = await userService.createUser({
-      email,
-      firstName: given_name || "",
-      lastName: family_name || "",
-      image: picture,
-      provider: ProviderType.GOOGLE,
-      googleId: sub,
-      passportNumber: "NA",
-    } as any);
-  }
-
-  const tokens = createUserTokens(user);
-  await userService.editUser(user._id, { refreshToken: tokens.refreshToken });
-
-  res.send(
-    createResponse({
-      ...tokens,
-      userInfo: user,
-    })
-  );
-});
-
-// Facebook login
-export const facebookSignIn = asyncHandler(
-  async (req: Request, res: Response) => {
-    const { accessToken } = req.body;
-
-    const fbResp = await axios.get(
-      `https://graph.facebook.com/me?fields=id,email,first_name,last_name,picture&access_token=${accessToken}`
-    );
-
-    const { id, email, first_name, last_name, picture } = fbResp.data;
-
-    let user = await userService.getUserByEmail(email);
-
-    if (!user) {
-      user = await userService.createUser({
-        email,
-        firstName: first_name,
-        lastName: last_name,
-        image: picture?.data?.url,
-        provider: ProviderType.FACEBOOK,
-        facebookId: id,
-        passportNumber: "NA", // adjust if optional
-      } as any);
-    }
-
-    const tokens = createUserTokens(user);
-    await userService.editUser(user._id, { refreshToken: tokens.refreshToken });
-
-    res.send(
-      createResponse({
-        ...tokens,
-        userInfo: user,
-      })
-    );
-  }
-);
-// export const linkedInLogin = asyncHandler(
-//   async (req: Request, res: Response) => {
-//     const { access_token } = req.body;
-
-//     const urlSearchParams = new URLSearchParams({
-//       oauth2_access_token: access_token,
-//     });
-
-//     const { data: userData } = await axios.get<{
-//       sub: string;
-//       given_name: string;
-//       family_name: string;
-//       email: string;
-//       picture: string;
-//       name: string;
-//     }>(`https://api.linkedin.com/v2/userinfo?${urlSearchParams.toString()}`);
-
-//     const existUser = await userService.getUserByEmail(userData.email);
-//     const user =
-//       existUser ??
-//       (await userService.createUser({
-//         email: userData.email,
-//         name: userData?.name,
-//         linkedinId: userData.sub,
-//         image: userData.picture,
-//         provider: ProviderType.LINKEDIN,
-//         role: "USER",
-//       }));
-//     const tokens = createUserTokens(user);
-//     await userService.editUser(user._id, { refreshToken: tokens.refreshToken });
-//     res.send(createResponse(tokens));
-//   }
-// );

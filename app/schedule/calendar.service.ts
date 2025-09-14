@@ -7,6 +7,7 @@ import { sendPushNotification } from "../common/services/firebase.service";
 export const createEvent = async (data: Omit<ICalendarEvent, "_id" | "createdAt" | "updatedAt">) => {
   const event = await CalendarSchema.create(data);
 
+  console.log("userData, with the scheduleData", data);
   // Fetch user to get FCM token
   const user = await UserSchema.findById(event.userId);
   if (user?.fcmToken) {

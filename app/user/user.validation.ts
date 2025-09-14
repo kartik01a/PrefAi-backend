@@ -2,18 +2,37 @@ import { body, checkExact } from "express-validator";
 import { ProviderType } from "./user.dto";
 import * as userService from "./user.service";
 
+// export const login = checkExact([
+//   body("email")
+//     .notEmpty()
+//     .withMessage("Email is required")
+//     .isEmail()
+//     .withMessage("Email must be valid"),
+//   body("password")
+//     .notEmpty()
+//     .withMessage("Password is required")
+//     .isString()
+//     .withMessage("Password must be a string"),
+// ]);
 export const login = checkExact([
   body("email")
     .notEmpty()
     .withMessage("Email is required")
     .isEmail()
     .withMessage("Email must be valid"),
+
   body("password")
     .notEmpty()
     .withMessage("Password is required")
     .isString()
     .withMessage("Password must be a string"),
+
+  body("fcmToken")
+    .optional()
+    .isString()
+    .withMessage("fcmToken must be a string"),
 ]);
+
 
 export const verifyInvitation = checkExact([
   body("token")

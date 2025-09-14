@@ -19,6 +19,7 @@ export const deleteEvent = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getUserEvents = asyncHandler(async (req: Request, res: Response) => {
-  const events = await calendarService.getEventsByUser(req.params.userId);
+  console.log("getById", req.params)
+  const events = await calendarService.getEventsByUser(req.params.id);
   res.send(createResponse(events, "Events fetched successfully"));
 });
