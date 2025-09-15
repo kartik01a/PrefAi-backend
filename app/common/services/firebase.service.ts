@@ -2,7 +2,7 @@ import axios from "axios";
 
 /**
  * Send a push notification via Expo's push service.
- * 
+ *
  * @param expoPushToken - The Expo push token (e.g. ExponentPushToken[xxxx...])
  * @param title - Notification title
  * @param body - Notification body
@@ -23,7 +23,7 @@ export const sendPushNotification = async (
       data,
     };
 
-    await axios.post("https://exp.host/--/api/v2/push/send", message, {
+    await axios.post("https://exp.host/--/api/v2/push/send", [message], {
       headers: {
         Accept: "application/json",
         "Accept-Encoding": "gzip, deflate",
@@ -32,7 +32,7 @@ export const sendPushNotification = async (
     });
 
     console.log("✅ Push notification sent to", expoPushToken);
-  } catch (error) {
-    console.error("❌ Error sending push notification:", error);
+  } catch (error: any) {
+    console.error("❌ Error sending push notification:", error.response?.data || error.message);
   }
 };
