@@ -69,6 +69,7 @@
     "express-async-handler": "^1.2.0",
     "express-validator": "^7.0.1",
     "firebase-admin": "^13.5.0",
+    "googleapis": "^160.0.0",
     "jsonwebtoken": "^9.0.1",
     "mailchimp": "^1.2.1",
     "mammoth": "^1.10.0",
