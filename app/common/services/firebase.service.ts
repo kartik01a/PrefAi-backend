@@ -1,3 +1,4 @@
+import { google } from "googleapis";
 import axios from "axios";
 
 /**
@@ -8,31 +9,53 @@ import axios from "axios";
  * @param body - Notification body
  * @param data - Optional extra payload
  */
-export const sendPushNotification = async (
-  expoPushToken: string,
-  title: string,
-  body: string,
-  data?: Record<string, string>
-) => {
+
+const SCOPES = ["https://www.googleapis.com/auth/firebase.messaging"];
+
+async function getAccessToken() {
+  const client = new google.auth.JWT({
+    email: process.env.FCM_CLIENT_EMAIL,
+    key: process.env.FCM_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+    scopes: SCOPES,
+  });
+  
+  const credentials = await client.authorize();
+  return credentials.access_token;
+}
+
+export async function sendPushNotification(
+  fcmToken: string, 
+  title: string, 
+  body: string, 
+  data?: Record<string, any>
+) {
   try {
-    const message = {
-      to: expoPushToken,
-      sound: "default",
-      title,
-      body,
-      data,
-    };
-
-    await axios.post("https://exp.host/--/api/v2/push/send", [message], {
-      headers: {
-        Accept: "application/json",
-        "Accept-Encoding": "gzip, deflate",
-        "Content-Type": "application/json",
+    const accessToken = await getAccessToken();
+    
+    const response = await axios.post(
+      `https://fcm.googleapis.com/v1/projects/${process.env.FCM_PROJECT_ID}/messages:send`,
+      {
+        message: {
+          token: fcmToken,
+          notification: {
+            title,
+            body,
+          },
+          data: data || {},
+        },
       },
-    });
-
-    console.log("✅ Push notification sent to", expoPushToken);
-  } catch (error: any) {
-    console.error("❌ Error sending push notification:", error.response?.data || error.message);
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    
+    console.log("FCM Response:", response.data);
+    return response.data;
+  } catch (err) {
+    console.error("Error sending push notification:", err);
+    throw err;
   }
-};
+}
