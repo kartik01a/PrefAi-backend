@@ -1,6 +1,5 @@
-import { google } from "googleapis";
 import axios from "axios";
-
+import { JWT } from "google-auth-library";
 /**
  * Send a push notification via Expo's push service.
  *
@@ -12,15 +11,20 @@ import axios from "axios";
 
 const SCOPES = ["https://www.googleapis.com/auth/firebase.messaging"];
 
-async function getAccessToken() {
-  const client = new google.auth.JWT({
+async function getAccessToken(): Promise<string> {
+  const client = new JWT({
     email: process.env.FCM_CLIENT_EMAIL,
-    key: process.env.FCM_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    scopes: SCOPES,
+    key: process.env.FCM_PRIVATE_KEY?.replace(/\\n/g, "\n"), 
+    scopes: ["https://www.googleapis.com/auth/firebase.messaging"],
   });
-  
-  const credentials = await client.authorize();
-  return credentials.access_token;
+
+  const tokens = await client.authorize();
+
+  if (!tokens.access_token) {
+    throw new Error("Failed to generate access token from Google");
+  }
+
+  return tokens.access_token;
 }
 
 export async function sendPushNotification(
@@ -31,6 +35,8 @@ export async function sendPushNotification(
 ) {
   try {
     const accessToken = await getAccessToken();
+    console.log(fcmToken,"fcmToken")
+    console.log(data,"data")
     
     const response = await axios.post(
       `https://fcm.googleapis.com/v1/projects/${process.env.FCM_PROJECT_ID}/messages:send`,
