@@ -41,6 +41,17 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 });
 
 
+export const updateUserToken = asyncHandler(async (req: Request, res: Response): Promise<void> => {
+  const userId = req.params.id;
+  const { fcmToken } = req.body;
+  if (!fcmToken) {
+    res.status(400).send(createResponse(null, "fcmToken is required"));
+    return;
+  }
+  const user = await userService.editUser(userId, { fcmToken });
+  res.send(createResponse(user, "Push token updated successfully"));
+});
+
 export const logout = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user!;
   await userService.editUser(user._id, { refreshToken: "" });

@@ -4,57 +4,43 @@ import { Types } from "mongoose";
 import UserSchema from "../user/user.schema";
 import { sendPushNotification } from "../common/services/firebase.service";
 
-
-export const createEvent = async (data: Omit<ICalendarEvent, "_id" | "createdAt" | "updatedAt">) => {
+export const createEvent = async (
+  data: Omit<ICalendarEvent, "_id" | "createdAt" | "updatedAt">
+) => {
   const event = await CalendarSchema.create(data);
-
   const user = await UserSchema.findById(event.userId);
-  console.log("userData", user?.fcmToken)
-  if (user?.fcmToken) {
-    const eventStart = new Date(event.startDate);
-    const [hours, minutes] = event.startTime.split(":").map(Number);
-    eventStart.setHours(hours, minutes, 0, 0);
-
-    const notifyAt = new Date(eventStart.getTime() - 30 * 60 * 1000);
-    const delay = notifyAt.getTime() - Date.now();
-
-    console.log("user.fcmToken", user.fcmToken);
-      sendPushNotification(
-          user.fcmToken!,
-          "Upcoming Event Reminder",
-          `Your event "${event.title}" starts in 30 minutes.`,
-          { eventId: event._id.toString() }
-        );
-
-                sendPushNotification(
-          user.fcmToken!,
-          "Upcoming Event Reminder",
-          `Your event "${event.title}" starts in 30 minutes.`,
-          { eventId: event._id.toString() }
-        );
-
-    // if (delay > 0) {
-    //   console.log(`⏳ Scheduling notification in ${delay / 1000}s`);
-
-    //   setTimeout(() => {
-    //     sendPushNotification(
-    //       user.fcmToken!,
-    //       "Upcoming Event Reminder",
-    //       `Your event "${event.title}" starts in 30 minutes.`,
-    //       { eventId: event._id.toString() }
-    //     );
-    //   }, delay);
-    // } else {
-    //   console.log("⚠️ Event already within 30 minutes, sending immediately");
-    //   sendPushNotification(
-    //     user.fcmToken!,
-    //     "Upcoming Event Reminder",
-    //     `Your event "${event.title}" starts soon.`,
-    //     { eventId: event._id.toString() }
-    //   );
-    // }
-  }
-
+  if (!user?.fcmToken) return event;
+  const eventStart = new Date(event.startDate);
+  const [hours, minutes] = event.startTime.split(":").map(Number);
+  eventStart.setHours(hours, minutes, 0, 0);
+  const notifyAt = new Date(eventStart.getTime() - 30 * 60 * 1000);
+  const delay = notifyAt.getTime() - Date.now();
+  console.log("user.fcmToken", user.fcmToken);
+        sendPushNotification(
+        user.fcmToken!,
+        "Upcoming Event Reminder",
+        `Your event "${event.title}" starts in 30 minutes.`,
+        { eventId: event._id.toString() }
+      );
+  // if (delay > 0) {
+  //   console.log(`⏳ Scheduling notification in ${delay / 1000}s`);
+  //   setTimeout(() => {
+  //     sendPushNotification(
+  //       user.fcmToken!,
+  //       "Upcoming Event Reminder",
+  //       `Your event "${event.title}" starts in 30 minutes.`,
+  //       { eventId: event._id.toString() }
+  //     );
+  //   }, delay);
+  // } else {
+  //   console.log("⚠️ Event already within 30 minutes, sending immediately");
+  //   sendPushNotification(
+  //     user.fcmToken!,
+  //     "Upcoming Event Reminder",
+  //     `Your event "${event.title}" starts soon.`,
+  //     { eventId: event._id.toString() }
+  //   );
+  // }
   return event;
 };
 

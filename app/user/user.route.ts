@@ -19,6 +19,11 @@ router
     catchError,
     userController.updateUserData
   )
+  router.patch(
+  "/:id/token",
+  catchError,
+  userController.updateUserToken
+)
   .put("/:id", catchError, userController.updateUser)
   .patch("/:id", userValidator.editUser, catchError, userController.editUser)
   .post(
