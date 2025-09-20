@@ -26,6 +26,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   if (req.body.fcmToken) {
     updateData.fcmToken = req.body.fcmToken;
   }
+  console.log("req.body.fcmToken", req.body.fcmToken);
   // await userService.editUser(req.user!._id, {
   //   refreshToken: tokens.refreshToken,
   // });

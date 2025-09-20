@@ -23,7 +23,7 @@ export const sendPushNotification = async (
       data,
     };
 
-    await axios.post("https://exp.host/--/api/v2/push/send", [message], {
+    await axios.post("https://exp.host/--/api/v2/push/send", message, {
       headers: {
         Accept: "application/json",
         "Accept-Encoding": "gzip, deflate",
@@ -33,6 +33,9 @@ export const sendPushNotification = async (
 
     console.log("✅ Push notification sent to", expoPushToken);
   } catch (error: any) {
-    console.error("❌ Error sending push notification:", error.response?.data || error.message);
+    console.error(
+      "❌ Error sending push notification:",
+      error.response?.data || error.message
+    );
   }
 };
