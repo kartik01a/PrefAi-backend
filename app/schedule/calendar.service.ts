@@ -2,7 +2,7 @@ import CalendarSchema from "./calendar.schema";
 import { ICalendarEvent } from "./calendar.dto";
 import { Types } from "mongoose";
 import UserSchema from "../user/user.schema";
-import { sendPushNotification } from "../common/services/firebase.service";
+import { sendFcmNotification } from "../common/services/firebase.service";
 
 export const createEvent = async (
   data: Omit<ICalendarEvent, "_id" | "createdAt" | "updatedAt">
@@ -16,7 +16,7 @@ export const createEvent = async (
   const notifyAt = new Date(eventStart.getTime() - 30 * 60 * 1000);
   const delay = notifyAt.getTime() - Date.now();
   console.log("user.fcmToken", user.fcmToken);
-        sendPushNotification(
+        sendFcmNotification(
         user.fcmToken!,
         "Upcoming Event Reminder",
         `Your event "${event.title}" starts in 30 minutes.`,

@@ -1,121 +1,120 @@
-// import axios from "axios";
-
-// /**
-//  * Send a push notification via Expo's push service.
-//  *
-//  * @param expoPushToken - The Expo push token (e.g. ExponentPushToken[xxxx...])
-//  * @param title - Notification title
-//  * @param body - Notification body
-//  * @param data - Optional extra payload
-//  */
-// export const sendPushNotification = async (
-//   expoPushToken: string,
-//   title: string,
-//   body: string,
-//   data?: Record<string, string>
-// ) => {
-//   try {
-//     const message = {
-//       to: expoPushToken,
-//       sound: "default",
-//       title,
-//       body,
-//       data,
-//     };
-//     await axios.post("https://exp.host/--/api/v2/push/send", message, {
-//       headers: {
-//         Accept: "application/json",
-//         "Accept-Encoding": "gzip, deflate",
-//         "Content-Type": "application/json",
-//       },
-//     });
-
-//     console.log("✅ Push notification sent to", expoPushToken);
-//   } catch (error: any) {
-//     console.error(
-//       "❌ Error sending push notification:",
-//       error.response?.data || error.message
-//     );
-//   }
-// };
-
-import axios from "axios";
+// fcm.service.ts
+import admin from "firebase-admin";
 
 /**
- * Send push notification via Expo + check receipts after sending.
- *
- * @param expoPushToken - The Expo push token
- * @param title - Notification title
- * @param body - Notification body
- * @param data - Optional payload
+ * Initialize Firebase Admin SDK
  */
-export const sendPushNotification = async (
-  expoPushToken: string,
+function initializeFirebaseAdmin() {
+  if (admin.apps.length) {
+    return; // Already initialized
+  }
+
+  const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
+  
+  if (!credentialsJson) {
+    throw new Error("GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable is not set.");
+  }
+
+  try {
+    const serviceAccount = JSON.parse(credentialsJson);
+    
+    // Fix the private key formatting issue
+    if (serviceAccount.private_key) {
+      serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+    }
+
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
+
+    console.log("✅ Firebase Admin SDK initialized successfully");
+  } catch (error) {
+    console.error("❌ Error initializing Firebase Admin SDK:", error);
+  }
+}
+
+// Initialize Firebase Admin SDK
+initializeFirebaseAdmin();
+
+/**
+ * Send FCM notification to a single device token
+ */
+export async function sendFcmNotification(
+  fcmToken: string,
   title: string,
   body: string,
   data?: Record<string, string>
-) => {
-  try {
-    const message = {
-      to: expoPushToken,
-      sound: "default",
-      title,
-      body,
-      data,
-    };
-
-    // Step 1: Send notification
-    const response = await axios.post(
-      "https://exp.host/--/api/v2/push/send",
-      message,
-      {
-        headers: {
-          Accept: "application/json",
-          "Accept-Encoding": "gzip, deflate",
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    console.log("✅ Push API response:", response.data);
-
-    // Step 2: Collect message IDs
-    const tickets: string[] = [];
-    if (response.data?.data) {
-      const results = Array.isArray(response.data.data)
-        ? response.data.data
-        : [response.data.data];
-
-      for (const result of results) {
-        if (result.id) {
-          tickets.push(result.id);
-        }
-      }
-    }
-
-    // Step 3: Wait a few seconds before checking receipts
-    if (tickets.length > 0) {
-      setTimeout(async () => {
-        try {
-          const receiptRes = await axios.post(
-            "https://exp.host/--/api/v2/push/getReceipts",
-            { ids: tickets },
-            { headers: { "Content-Type": "application/json" } }
-          );
-
-          console.log("📩 Push Receipts:", JSON.stringify(receiptRes.data, null, 2));
-        } catch (err: any) {
-          console.error(
-            "❌ Error fetching push receipts:",
-            err.response?.data || err.message
-          );
-        }
-      }, 5000); // wait 5s before checking receipts
-    }
-  } catch (error: any) {
-    console.error(
-      "❌ Error sending push notification:",
-      error.response?.data || error.message
-    );
+): Promise<string> {
+  if (!fcmToken) {
+    throw new Error("FCM token is required");
   }
-};
+
+  if (!title || !body) {
+    throw new Error("Title and body are required for FCM notification");
+  }
+
+  const message: admin.messaging.Message = {
+    token: fcmToken,
+    notification: { 
+      title: title.trim(), 
+      body: body.trim() 
+    },
+    data: data ?? {},
+    android: {
+      priority: "high",
+      notification: {
+        sound: "default",
+        clickAction: "FLUTTER_NOTIFICATION_CLICK",
+      },
+    },
+    apns: {
+      payload: {
+        aps: {
+          sound: "default",
+          contentAvailable: true,
+          category: "MESSAGE",
+        },
+      },
+    },
+  };
+
+  try {
+    const response = await admin.messaging().send(message);
+    console.log("✅ FCM notification sent successfully:", {
+      messageId: response,
+      token: fcmToken.substring(0, 20) + "...", // Log partial token for security
+      title,
+    });
+    return response;
+  } catch (error: any) {
+    console.error("❌ FCM notification failed:", {
+      error: error.message,
+      code: error.code,
+      token: fcmToken.substring(0, 20) + "...",
+      title,
+    });
+    
+    // Handle specific FCM error codes
+    if (error.code === 'messaging/registration-token-not-registered') {
+      throw new Error('FCM token is no longer valid. Please refresh the token.');
+    } else if (error.code === 'messaging/invalid-registration-token') {
+      throw new Error('Invalid FCM token format.');
+    } else if (error.code === 'messaging/mismatched-credential') {
+      throw new Error('FCM credentials mismatch.');
+    }
+    
+    throw error;
+  }
+}
+
+
+export function isValidFcmToken(token: string): boolean {
+  if (!token || typeof token !== 'string') {
+    return false;
+  }
+  
+  // FCM tokens are typically 152+ characters long and contain alphanumeric characters, hyphens, and underscores
+  return token.length >= 140 && /^[a-zA-Z0-9_-]+$/.test(token);
+}
+
+
