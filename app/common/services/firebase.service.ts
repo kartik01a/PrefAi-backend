@@ -79,7 +79,10 @@ export async function sendFcmNotification(
   };
 
   try {
+    console.log("message", message);
+    console.log("fatt gya")
     const response = await admin.messaging().send(message);
+    console.log("mein chal gya");
     console.log("✅ FCM notification sent successfully:", {
       messageId: response,
       token: fcmToken.substring(0, 20) + "...", // Log partial token for security
@@ -93,6 +96,7 @@ export async function sendFcmNotification(
       token: fcmToken.substring(0, 20) + "...",
       title,
     });
+    console.log("error", error);
     
     // Handle specific FCM error codes
     if (error.code === 'messaging/registration-token-not-registered') {
