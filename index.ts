@@ -56,7 +56,7 @@ const initApp = async (): Promise<void> => {
   app.use("/api", routes);
 
   app.get("/", (req: Request, res: Response) => {
-    res.send({ status: "ok" });
+    res.send({ status: "Are you 100% sure its working." });
   });
 
   // error handler
