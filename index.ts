@@ -59,6 +59,10 @@ const initApp = async (): Promise<void> => {
     res.send({ status: "Are you 100% sure its working." });
   });
 
+   app.get("/test", (req: Request, res: Response) => {
+    res.send({ status: "This routes is for testing." });
+  });
+
   // error handler
   app.use(errorHandler);
   http.createServer(app).listen(port, () => {
